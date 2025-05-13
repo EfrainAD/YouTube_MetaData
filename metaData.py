@@ -8,6 +8,10 @@ channel_id = "UCZ8OY0stb71wG6tJyxVWWKg"
 def pause():
    input("Press Enter to continue... ")
 
+def copy_to_clipboard(text: str):
+    subprocess.run('pbcopy', input=text.encode('utf-8'))
+    print("Coyped to clipboard")
+
 def input_bool(message):
    while True:
       user_input = input(f"{message}\ny/n ").lower()
@@ -67,6 +71,10 @@ for i, video in enumerate(videos, start=1):
       pause()
    if upload_format:
       print(f"Description:\n-------\n{description}\n-------")
+      copy_to_clipboard(description)
+      pause()
+   else:
+      print()
 
    if upload_format:
       print()
