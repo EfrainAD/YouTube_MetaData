@@ -1,8 +1,12 @@
 from googleapiclient.discovery import build
+import subprocess
 from secrets import env_api_key
 
 api_key = env_api_key
 channel_id = "UCZ8OY0stb71wG6tJyxVWWKg" 
+
+def pause():
+   input("Press Enter to continue... ")
 
 def input_bool(message):
    while True:
@@ -59,6 +63,11 @@ for i, video in enumerate(videos, start=1):
    print('date:', date_only)
    print(f"Title:\n------\n{title}\n------")
    if upload_format:
+      copy_to_clipboard(title)
+      pause()
+   if upload_format:
       print(f"Description:\n-------\n{description}\n-------")
-   print()
+
+   if upload_format:
+      print()
 
