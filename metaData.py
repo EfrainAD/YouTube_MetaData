@@ -38,14 +38,27 @@ if video_ids:
       id=",".join(video_ids)
    ).execute()
 
-for video in videos_response['items']:
+upload_format = input_bool("Display setting, that you want for when uploading videos to Spodify?")
+print("\n")
+
+videos = videos_response['items']
+
+if upload_format:
+   videos = videos[::-1]
+
+for i, video in enumerate(videos, start=1):
    snippet = video['snippet']
    streaming_date = video['liveStreamingDetails']['actualStartTime']
    date_only = streaming_date[:10]
+   title = snippet["title"]
+   description = snippet["description"]
 
-   print('id:', video['id'])
-   print('title:', snippet['title'])
+   # print('list id:', i)
+   if not upload_format:
+      print(f"#{i} 'Video Id: {video['id']}")
    print('date:', date_only)
+   print(f"Title:\n------\n{title}\n------")
+   if upload_format:
+      print(f"Description:\n-------\n{description}\n-------")
    print()
-# print("Description:\n")
-# print(snippet['description'], "\n")
+
