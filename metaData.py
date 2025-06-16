@@ -7,6 +7,7 @@ channel_id = "UCZ8OY0stb71wG6tJyxVWWKg"
 
 def pause():
    input("Press Enter to continue... ")
+   print()
 
 def copy_to_clipboard(text: str):
     subprocess.run('pbcopy', input=text.encode('utf-8'))
@@ -59,23 +60,30 @@ for i, video in enumerate(videos, start=1):
    streaming_date = video['liveStreamingDetails']['actualStartTime']
    date_only = streaming_date[:10]
    title = snippet["title"]
+   file_name = title.replace(":", "_")
    description = snippet["description"]
 
    # print('list id:', i)
    if not upload_format:
       print(f"#{i} 'Video Id: {video['id']}")
-   print('date:', date_only)
-   print(f"Title:\n------\n{title}\n------")
-   if upload_format:
+      print('date:', date_only)
+   elif upload_format:
+      # Copy File Name
+      print(f"File Name:\n----------\n{file_name}\n----------")
+      copy_to_clipboard(file_name)
+      pause()
+
+      # Copy Title
+      print(f"Title:\n------\n{title}\n------")
       copy_to_clipboard(title)
       pause()
-   if upload_format:
-      print(f"Description:\n-------\n{description}\n-------")
+
+      # Copy Description
+      print(f"Description:\n------------\n{description}\n------------")
       copy_to_clipboard(description)
       pause()
-   else:
-      print()
 
-   if upload_format:
+      # Display Date published, since this when you need it in the upload form
+      print(f"Date:\n-----\n{date_only}\n-----")
+      pause()
       print()
-
