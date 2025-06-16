@@ -65,8 +65,11 @@ for i, video in enumerate(videos, start=1):
 
    # print('list id:', i)
    if not upload_format:
-      print(f"#{i} 'Video Id: {video['id']}")
-      print('date:', date_only)
+      print(f"#{i}")
+      print("Video Id:", video['id'])
+      print("Title:", title)
+      print("Date:", date_only)
+      print()
    elif upload_format:
       # Copy File Name
       print(f"File Name:\n----------\n{file_name}\n----------")
