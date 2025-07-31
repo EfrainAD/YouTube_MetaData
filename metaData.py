@@ -22,13 +22,17 @@ def input_bool(message):
          return False
       print("Invalid entry.")
 
+### MAIN ###
 youtube = build('youtube', 'v3', developerKey=api_key)
 
-is_max_default = input_bool("Display last 10 videos? Or another ammount")
-if is_max_default:
-   maxResults = 10
+print("To use the default value, just leave the input blank.")
+
+user_input = input("How many vidoe to display? Defualt is 10 (max allowed is 50)\n")
+if user_input.strip() in ("", "0"):
+    maxResults = 10
 else:
-   maxResults = int(input("How many vidoe to display? (max is 50)\n"))
+    maxResults = int(user_input)
+    
 
 search_response = youtube.search().list(
     part="id",
