@@ -33,64 +33,75 @@ if user_input.strip() in ("", "0"):
 else:
     maxResults = int(user_input)
     
-
-search_response = youtube.search().list(
-    part="id",
-    channelId=channel_id,
-    eventType="completed",
-    order="date",
-    type="video",
-    maxResults=maxResults,
+# Get the playlist id that will be used to get the video list from.
+channel_response = youtube.channels().list(
+    part="contentDetails",
+    id=channel_id
 ).execute()
 
-video_ids = [item['id']['videoId'] for item in search_response['items']]
+upload_playlist_id = channel_response["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
 
-if video_ids:
-   videos_response = youtube.videos().list(
-      part="snippet,liveStreamingDetails",
-      id=",".join(video_ids)
-   ).execute()
+# Fetch video id's from upload playlist
+if upload_playlist_id:
+    playlist_response = youtube.playlistItems().list(
+        part="snippet,contentDetails",
+        playlistId=upload_playlist_id,
+        maxResults=maxResults
+    ).execute()
 
-upload_format = input_bool("Display setting, that you want for when uploading videos to Spodify?")
+video_ids = [item["contentDetails"]["videoId"] for item in playlist_response['items']]
+
+upload_format = input_bool("Display setting, that you want for when uploading videos to Spotify?")
 print("\n")
 
-videos = videos_response['items']
+# Fetch the metadata for each video by id's
+if video_ids:
+    videos_response = youtube.videos().list(
+        part="snippet,liveStreamingDetails",
+        id=",".join(video_ids)
+    ).execute()
+
+    videos = videos_response["items"] or []
+else:
+    videos = []
 
 if upload_format:
    videos = videos[::-1]
 
+# Display each video's Data
 for i, video in enumerate(videos, start=1):
-   snippet = video['snippet']
-   streaming_date = video['liveStreamingDetails']['actualStartTime']
-   date_only = streaming_date[:10]
-   title = snippet["title"]
-   file_name = title.replace(":", "_")
-   description = snippet["description"]
+    snippet = video['snippet']
 
-   # print('list id:', i)
-   if not upload_format:
-      print(f"#{i}")
-      print("Video Id:", video['id'])
-      print("Title:", title)
-      print("Date:", date_only)
-      print()
-   elif upload_format:
-      # Copy File Name
-      print(f"File Name:\n----------\n{file_name}\n----------")
-      copy_to_clipboard(file_name)
-      pause()
+    streaming_date = video['liveStreamingDetails']['actualStartTime']
+    videoId = video["id"]
+    date_only = streaming_date[:10]
+    title = snippet["title"]
+    file_name = title.replace(":", "_")
+    description = snippet["description"]
 
-      # Copy Title
-      print(f"Title:\n------\n{title}\n------")
-      copy_to_clipboard(title)
-      pause()
+    if not upload_format:
+        print(f"#{i}")
+        print("Video Id:", videoId)
+        print("Title:", title)
+        print("Date:", date_only)
+        print()
+    elif upload_format:
+        # Copy File Name
+        print(f"File Name:\n----------\n{file_name}\n----------")
+        copy_to_clipboard(file_name)
+        pause()
 
-      # Copy Description
-      print(f"Description:\n------------\n{description}\n------------")
-      copy_to_clipboard(description)
-      pause()
+        # Copy Title
+        print(f"Title:\n------\n{title}\n------")
+        copy_to_clipboard(title)
+        pause()
 
-      # Display Date published, since this when you need it in the upload form
-      print(f"Date:\n-----\n{date_only}\n-----")
-      pause()
-      print()
+        # Copy Description
+        print(f"Description:\n------------\n{description}\n------------")
+        copy_to_clipboard(description)
+        pause()
+
+        # Display Date published, since this when you need it in the upload form
+        print(f"Date:\n-----\n{date_only}\n-----")
+        pause()
+        print()
