@@ -31,7 +31,7 @@ def main():
     print("To use the default value, just leave the input blank.")
 
     user_input = input("How many videos to display? Default is 10 (max allowed is 50)\n")
-    max_results = min(max(1, int(user_input)), max_video_limit) if user_input.strip() not in ("", "0") else 10
+    max_results = int(user_input) if user_input.strip() not in ("", "0") else 10
 
     upload_display = input_bool("Display setting, that you want for when uploading videos to Spotify?")
     print()
@@ -54,29 +54,43 @@ def main():
         return
 
     # Fetch videos id's from the upload playlist by its id
-    playlist_response = youtube.playlistItems().list(
-        part="snippet,contentDetails",
-        playlistId=upload_playlist_id,
-        maxResults=max_results
-    ).execute()
+    video_ids = []
+    next_page_token = None
+    while True:
+        playlist_response = youtube.playlistItems().list(
+            part="snippet,contentDetails",
+            playlistId=upload_playlist_id,
+            maxResults=min(max_results, 50),
+            pageToken=next_page_token
+        ).execute()
 
-    try:
-        video_ids = [item["contentDetails"]["videoId"] for item in playlist_response['items']]
-    except Exception as e:
-        print("Error: Was not able to properly parse the video mata data.")
-        print("Issue with:", e)
-        return
+        try:
+            video_ids += [item["contentDetails"]["videoId"] for item in playlist_response['items']]
+        except Exception as e:
+            print("Error: Was not able to properly parse the video mata data.")
+            print("Issue with:", e)
+            return
+
+        max_results -= 50
+        next_page_token = playlist_response.get("nextPageToken")
+
+        if max_results <= 0:
+            break
 
     # Fetch the metadata for each video by id's
-    videos_response = youtube.videos().list(
-        part="snippet,liveStreamingDetails",
-        id=",".join(video_ids)
-    ).execute()
+    videos = []
+    while video_ids:
+        videos_response = youtube.videos().list(
+            part="snippet,liveStreamingDetails",
+            id=",".join(video_ids[:50])
+        ).execute()
 
-    videos = videos_response.get("items", [])
-    if not videos:
-        print("No channel data found.")
-        return
+        new_videos = videos_response.get("items", [])
+        if not new_videos:
+            print("Error: Fauld to fetch the metadata for each video by id's")
+            return
+        videos += new_videos
+        video_ids = video_ids[50:]
 
     # Change order if the user is uploading videos
     if upload_display:
