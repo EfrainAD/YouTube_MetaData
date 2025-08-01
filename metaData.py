@@ -1,3 +1,5 @@
+import textwrap
+
 from googleapiclient.discovery import build
 import subprocess
 from secrets import env_api_key
@@ -33,7 +35,11 @@ def main():
     user_input = input("How many videos to display? Default is 10 (max allowed is 50)\n")
     max_results = int(user_input) if user_input.strip() not in ("", "0") else 10
 
-    upload_display = input_bool("Display setting, that you want for when uploading videos to Spotify?")
+    should_use_copy_mode = input_bool("Display setting, that you want for when uploading videos to Spotify?")
+    if should_use_copy_mode:
+        should_display_description = False
+    else:
+        should_display_description = input_bool("Display Description?")
     print()
 
     # Get the playlist id that will be used to get the video list from.
@@ -93,7 +99,7 @@ def main():
         video_ids = video_ids[50:]
 
     # Change order if the user is uploading videos
-    if upload_display:
+    if should_use_copy_mode:
        videos = videos[::-1]
 
     # Display each video's Data
@@ -105,11 +111,15 @@ def main():
         file_name = title.replace(":", "_")
         description = video['snippet']["description"]
 
-        if not upload_display:
-            print(f"#{i}")
-            print("Video Id:", video_id)
-            print("Title:", title)
-            print("Date:", date_only)
+        if not should_use_copy_mode:
+            print(textwrap.dedent(f"""\
+                #{i}
+                Video Id: {video_id}
+                Title: {title}
+                Date: {date_only}
+            """))
+            if should_display_description:
+                print(f"Description:\n{description}")
             print()
         else:
             # Copy File Name
